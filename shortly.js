@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 
 
 var db = require('./app/config');
@@ -12,6 +13,15 @@ var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
+
+
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true 
+}));
+
+
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -25,6 +35,13 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', 
 function(req, res) {
+  console.log("----------------------->>>");
+  
+  console.log(req.session);
+  // for (key in req){
+  //   console.log(key);
+  // }
+  // check if user is logged in
   res.render('index');
 });
 
@@ -78,7 +95,9 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
-
+app.get('login', function(req, res){
+  res.render('login');
+});
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
@@ -86,7 +105,7 @@ function(req, res) {
 // If the short-code doesn't exist, send the user to '/'
 /************************************************************/
 
-app.get('/*', function(req, res) {
+app.get('/*', function(req, res) {  
   new Link({ code: req.params[0] }).fetch().then(function(link) {
     if (!link) {
       res.redirect('/');
