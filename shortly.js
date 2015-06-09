@@ -15,11 +15,11 @@ var Click = require('./app/models/click');
 var app = express();
 
 
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: true 
-}));
+// app.use(session({
+//   secret: 'keyboard cat',
+//   resave: false,
+//   saveUninitialized: true 
+// }));
 
 
 
@@ -29,84 +29,102 @@ app.use(partials());
 // Parse JSON (uniform resource locators)
 app.use(bodyParser.json());
 // Parse forms (signup/login)
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.use(express.static(__dirname + '/public'));
 
 
-// if (!session) res.end(404);
-
-
-// app.get('/', function(){
-//   // checklogin();  //return login page or continue
-//   render()
-// })
-
-
-app.get('/', 
-function(req, res) {
-  // console.log("----------------------->>>");
-  // console.log(req.session);
-  
-  if (!req.session) {//if (true) {//
-    res.redirect("/login");
-  }
-
-  res.render('index');
-});
-
-// app.get('/create', 'util.redirectLogin' 
-// function(req, res) {
-//   res.render('index');
-// });
-
-app.get('/links', 
-function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  });
-});
-
-app.post('/links', 
-function(req, res) {
-  var uri = req.body.url;
-
-  if (!util.isValidUrl(uri)) {
-    console.log('Not a valid url: ', uri);
-    return res.send(404);
-  }
-
-  new Link({ url: uri }).fetch().then(function(found) {
-    if (found) {
-      res.send(200, found.attributes);
+app.get('/',
+  function(req, res) {
+    if (!req.session) { //if (true) {//
+      res.redirect("/login");
     } else {
-      util.getUrlTitle(uri, function(err, title) {
-        if (err) {
-          console.log('Error reading URL heading: ', err);
-          return res.send(404);
-        }
-
-        var link = new Link({
-          url: uri,
-          title: title,
-          base_url: req.headers.origin
-        });
-
-        link.save().then(function(newLink) {
-          Links.add(newLink);
-          res.send(200, newLink);
-        });
-      });
+      console.log("----------------------->>>");
+      console.log(req.session);
+      res.render('index');
     }
+
   });
-});
+
+
+app.get('/links',
+  function(req, res) {
+    if (!req.session) {
+      res.redirect("/login");
+    }
+    Links.reset().fetch().then(function(links) {
+      res.json(links.models);
+    });
+  });
+
+app.post('/links',
+  function(req, res) {
+
+    var uri = req.body.url;
+
+    if (!util.isValidUrl(uri)) {
+      console.log('Not a valid url: ', uri);
+      return res.send(404);
+    }
+
+    new Link({
+      url: uri
+    }).fetch().then(function(found) {
+      if (found) {
+        res.send(200, found.attributes);
+      } else {
+        util.getUrlTitle(uri, function(err, title) {
+          if (err) {
+            console.log('Error reading URL heading: ', err);
+            return res.send(404);
+          }
+
+          var link = new Link({
+            url: uri,
+            title: title,
+            base_url: req.headers.origin
+          });
+
+          link.save().then(function(newLink) {
+            Links.add(newLink);
+            res.send(200, newLink);
+          });
+        });
+      }
+    });
+  });
+
 
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
 
-app.get('/login', function(req, res){
+app.get('/login', function(req, res) {
   res.render('login');
 });
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup',
+  function(req, res) {
+    console.log("-----------------------xxxx");
+    console.log(req.body);
+
+    var username = req.body.username;
+    var pw = req.body.password;
+
+    var user = new User({
+      username: username,
+      password: pw
+    }).save().then(function() {
+      res.redirect('/');
+    });
+
+  });
+
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
@@ -114,8 +132,10 @@ app.get('/login', function(req, res){
 // If the short-code doesn't exist, send the user to '/'
 /************************************************************/
 
-app.get('/*', function(req, res) {  
-  new Link({ code: req.params[0] }).fetch().then(function(link) {
+app.get('/*', function(req, res) {
+  new Link({
+    code: req.params[0]
+  }).fetch().then(function(link) {
     if (!link) {
       res.redirect('/');
     } else {
