@@ -4,7 +4,6 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 
-
 var db = require('./app/config');
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
@@ -14,14 +13,11 @@ var Click = require('./app/models/click');
 
 var app = express();
 
-
 // app.use(session({
 //   secret: 'keyboard cat',
 //   resave: false,
 //   saveUninitialized: true 
 // }));
-
-
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -34,7 +30,6 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static(__dirname + '/public'));
 
-
 app.get('/',
   function(req, res) {
     if (!req.session) { //if (true) {//
@@ -46,7 +41,6 @@ app.get('/',
     }
 
   });
-
 
 app.get('/links',
   function(req, res) {
@@ -95,14 +89,70 @@ app.post('/links',
     });
   });
 
-
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
 
+/* LOGIN POST & GET HANDLING */
+
 app.get('/login', function(req, res) {
   res.render('login');
 });
+
+app.post('/login', function(req, res) {
+  var username = req.body.username;
+  var pw = req.body.password;
+
+  db.knex('users')
+    .where('username', '=', username)
+    .then(function(loginData) {
+
+      if (loginData.length > 0 && loginData[0].password === pw) {
+        console.log("-----------------------xxxx");
+        console.log(loginData);
+        console.log(loginData[0].password);
+        console.log(pw);
+        console.log(loginData[0].password === pw);
+        console.log("-----------------------xxxx");
+        res.redirect("/");
+      } else {
+        res.redirect("/login");
+      }
+    });
+
+  // Users
+  //   .query("where", "=", username)
+  //   .fetch()
+  //   .then(function(exists) {
+  //     if (exists.length > 0) res.redirect("/");
+
+  //       if (!exists) {
+  //         res.redirect("/login");
+  //       } else {
+  //         res.redirect("/");
+  //         // app.use(session({
+  //         //   secret: 'keyboard cat',
+  //         //   resave: false,
+  //         //   saveUninitialized: true
+  //         // }));
+  //       }
+
+  //     else {
+  //       res.redirect("/login");
+  //     }
+  //   });
+
+  // app.use(session({
+  //   secret: 'keyboard cat',
+  //   resave: false,
+  //   saveUninitialized: true 
+  // }));
+  // new User({username: req.username})
+  //   .fetch().then();
+
+});
+
+/* SIGNUP POST & GET HANDLING */
 
 app.get('/signup', function(req, res) {
   res.render('signup');
@@ -110,8 +160,6 @@ app.get('/signup', function(req, res) {
 
 app.post('/signup',
   function(req, res) {
-    console.log("-----------------------xxxx");
-    console.log(req.body);
 
     var username = req.body.username;
     var pw = req.body.password;
@@ -124,7 +172,6 @@ app.post('/signup',
     });
 
   });
-
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
