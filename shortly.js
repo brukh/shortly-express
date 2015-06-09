@@ -13,12 +13,6 @@ var Click = require('./app/models/click');
 
 var app = express();
 
-// app.use(session({
-//   secret: 'keyboard cat',
-//   resave: false,
-//   saveUninitialized: true 
-// }));
-
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
@@ -108,47 +102,11 @@ app.post('/login', function(req, res) {
     .then(function(loginData) {
 
       if (loginData.length > 0 && loginData[0].password === pw) {
-        console.log("-----------------------xxxx");
-        console.log(loginData);
-        console.log(loginData[0].password);
-        console.log(pw);
-        console.log(loginData[0].password === pw);
-        console.log("-----------------------xxxx");
         res.redirect("/");
       } else {
         res.redirect("/login");
       }
     });
-
-  // Users
-  //   .query("where", "=", username)
-  //   .fetch()
-  //   .then(function(exists) {
-  //     if (exists.length > 0) res.redirect("/");
-
-  //       if (!exists) {
-  //         res.redirect("/login");
-  //       } else {
-  //         res.redirect("/");
-  //         // app.use(session({
-  //         //   secret: 'keyboard cat',
-  //         //   resave: false,
-  //         //   saveUninitialized: true
-  //         // }));
-  //       }
-
-  //     else {
-  //       res.redirect("/login");
-  //     }
-  //   });
-
-  // app.use(session({
-  //   secret: 'keyboard cat',
-  //   resave: false,
-  //   saveUninitialized: true 
-  // }));
-  // new User({username: req.username})
-  //   .fetch().then();
 
 });
 
