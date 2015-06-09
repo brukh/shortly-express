@@ -33,22 +33,31 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
+// if (!session) res.end(404);
+
+
+// app.get('/', function(){
+//   // checklogin();  //return login page or continue
+//   render()
+// })
+
+
 app.get('/', 
 function(req, res) {
-  console.log("----------------------->>>");
+  // console.log("----------------------->>>");
+  // console.log(req.session);
   
-  console.log(req.session);
-  // for (key in req){
-  //   console.log(key);
-  // }
-  // check if user is logged in
+  if (!req.session) {//if (true) {//
+    res.redirect("/login");
+  }
+
   res.render('index');
 });
 
-app.get('/create', 
-function(req, res) {
-  res.render('index');
-});
+// app.get('/create', 'util.redirectLogin' 
+// function(req, res) {
+//   res.render('index');
+// });
 
 app.get('/links', 
 function(req, res) {
@@ -95,7 +104,7 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
-app.get('login', function(req, res){
+app.get('/login', function(req, res){
   res.render('login');
 });
 
